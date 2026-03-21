@@ -361,6 +361,74 @@
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+  /* ── Bonus round ── */
+  .bonus-locked {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg2);
+    border: 0.5px solid var(--border);
+    border-radius: 16px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+  .bonus-locked.show { display: flex; }
+  .bonus-lock-icon { font-size: 1.5rem; line-height: 1; }
+  .bonus-lock-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem; font-weight: 700; color: var(--cream);
+  }
+  .bonus-lock-sub { font-size: 12px; color: var(--text3); }
+
+  .bonus-section {
+    display: none;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .bonus-section.show { display: flex; }
+
+  .bonus-header {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    background: var(--bg2);
+    border: 0.5px solid rgba(212,175,55,0.3);
+    border-radius: 10px;
+  }
+  .bonus-star { font-size: 1.1rem; line-height: 1; }
+  .bonus-header-text { flex: 1; }
+  .bonus-header-title { font-size: 12px; font-weight: 500; color: #d4af37; letter-spacing: 0.05em; text-transform: uppercase; }
+  .bonus-header-sub { font-size: 11px; color: var(--text3); margin-top: 1px; }
+
+  .bonus-player-card {
+    background: var(--bg2);
+    border: 0.5px solid rgba(212,175,55,0.25);
+    border-radius: 16px;
+    padding: 1.25rem;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .bonus-play-btn {
+    width: 48px; height: 48px; border-radius: 50%;
+    border: 1.5px solid #d4af37; background: transparent;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, transform 0.1s; flex-shrink: 0;
+  }
+  .bonus-play-btn:hover { background: rgba(212,175,55,0.1); }
+  .bonus-play-btn:active { transform: scale(0.93); }
+  .bonus-play-btn svg { fill: #d4af37; }
+  .bonus-bar.unplayed { background: #7a6520; }
+  .bonus-bar.playing  { background: #d4af37; }
+  .bonus-pdot.used    { background: #d4af37; }
+
+  .bonus-end-card {
+    display: none; flex-direction: column; align-items: center; gap: 10px;
+    background: var(--bg2); border: 0.5px solid rgba(212,175,55,0.3);
+    border-radius: 16px; padding: 1.5rem; text-align: center;
+  }
+  .bonus-end-card.show { display: flex; }
+
+
+
   /* ── Scrollbar ── */
   .autocomplete::-webkit-scrollbar { width: 4px; }
   .autocomplete::-webkit-scrollbar-track { background: transparent; }
@@ -430,9 +498,59 @@
     <div class="end-next" id="endNext"></div>
     <div class="end-actions">
       <button class="btn btn-ghost" onclick="showStats()">stats</button>
-      <button class="btn btn-primary" onclick="shareResult()">share result</button>
+      <button class="btn btn-primary" id="shareBtn" onclick="shareResult()">share &amp; unlock bonus</button>
     </div>
   </div>
+
+  <!-- Bonus: locked (won, not yet shared) -->
+  <div class="bonus-locked" id="bonusLocked">
+    <div class="bonus-lock-icon">&#x1F512;</div>
+    <div class="bonus-lock-title">bonus round locked</div>
+    <div class="bonus-lock-sub">share your result above to unlock a harder bonus song</div>
+  </div>
+
+  <!-- Bonus: unlocked section -->
+  <div class="bonus-section" id="bonusSection">
+    <div class="bonus-header">
+      <div class="bonus-star">&#x2605;</div>
+      <div class="bonus-header-text">
+        <div class="bonus-header-title">bonus round</div>
+        <div class="bonus-header-sub">a deeper cut &#8212; for true fans only</div>
+      </div>
+    </div>
+    <div class="bonus-player-card">
+      <div class="waveform" id="bonusWaveform" onclick="toggleBonusPlay()"></div>
+      <div class="player-controls">
+        <button class="bonus-play-btn" id="bonusPlayBtn" onclick="toggleBonusPlay()">
+          <svg id="bonusPlayIcon" width="20" height="20" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <div class="clip-info">
+          <div class="clip-label">bonus clip</div>
+          <div class="clip-duration" id="bonusClipDuration">1 second</div>
+        </div>
+        <div class="progress-dots" id="bonusProgressDots"></div>
+      </div>
+    </div>
+    <div class="guesses-list" id="bonusGuessList"></div>
+    <div class="input-section" id="bonusInputSection">
+      <div class="search-row">
+        <input class="song-input" id="bonusSongInput" type="text"
+          placeholder="name the bonus track..." autocomplete="off" autocorrect="off" spellcheck="false"
+          oninput="onBonusInput(this.value)" onkeydown="onBonusKey(event)">
+        <button class="btn btn-ghost" onclick="doBonusSkip()">skip</button>
+        <button class="btn btn-primary" id="bonusSubmitBtn" disabled onclick="doBonusSubmit()" style="background:#b8960e;">guess</button>
+      </div>
+      <div class="autocomplete" id="bonusAutocomplete"></div>
+    </div>
+    <div class="bonus-end-card" id="bonusEndCard">
+      <div class="end-headline" id="bonusEndHeadline"></div>
+      <div class="end-song" id="bonusEndSong"></div>
+      <div class="end-actions">
+        <button class="btn btn-ghost" onclick="shareBonusResult()">share bonus result</button>
+      </div>
+    </div>
+  </div>
+
 </main>
 
 <!-- Stats Modal -->
@@ -476,78 +594,78 @@
 <script>
 // ─────────────────────────────────────────────
 // SONG LIST — add/remove songs freely.
-// Each entry: { title, album, youtubeId, startSec }
+// Each entry: { title, album }
 // startSec = where in the YouTube video to begin the clip
 // ─────────────────────────────────────────────
 const SONGS = [
-  { title: "Come Together",                   album: "Abbey Road",              youtubeId: "45cEn30WRpQ", startSec: 0   },
-  { title: "Hey Jude",                         album: "Single",                  youtubeId: "A_MjCqQoLLA", startSec: 0   },
-  { title: "Let It Be",                        album: "Let It Be",               youtubeId: "QDYfEBY9NM4", startSec: 0   },
-  { title: "Yesterday",                        album: "Help!",                   youtubeId: "NrgmdOz227I", startSec: 0   },
-  { title: "Something",                        album: "Abbey Road",              youtubeId: "UelDrZ1aFeY", startSec: 0   },
-  { title: "Here Comes the Sun",               album: "Abbey Road",              youtubeId: "KQetemT1sWc", startSec: 0   },
-  { title: "Blackbird",                        album: "The White Album",         youtubeId: "Man4Xw8Xypo", startSec: 0   },
-  { title: "In My Life",                       album: "Rubber Soul",             youtubeId: "YBcdt6DsLQA", startSec: 0   },
-  { title: "A Day in the Life",                album: "Sgt. Pepper's",           youtubeId: "usNsCeOV4GM", startSec: 0   },
-  { title: "Norwegian Wood",                   album: "Rubber Soul",             youtubeId: "Y_V6y1ZCg_8", startSec: 0   },
-  { title: "Eleanor Rigby",                    album: "Revolver",                youtubeId: "HuS5NuXRb5Y", startSec: 0   },
-  { title: "Strawberry Fields Forever",        album: "Magical Mystery Tour",    youtubeId: "HtUH9z_Oey8", startSec: 0   },
-  { title: "Penny Lane",                       album: "Magical Mystery Tour",    youtubeId: "S-rB0pHI9fU", startSec: 0   },
-  { title: "While My Guitar Gently Weeps",     album: "The White Album",         youtubeId: "6TQVU3mi-KE", startSec: 0   },
-  { title: "Help!",                            album: "Help!",                   youtubeId: "2Q_ZF2iE3I0", startSec: 0   },
-  { title: "Twist and Shout",                  album: "Please Please Me",        youtubeId: "b-VAxTMBM_A", startSec: 0   },
-  { title: "I Am the Walrus",                  album: "Magical Mystery Tour",    youtubeId: "9s0MzNOA_Cs", startSec: 0   },
-  { title: "Love Me Do",                       album: "Please Please Me",        youtubeId: "AkQkbzEBAnE", startSec: 0   },
-  { title: "She Loves You",                    album: "With the Beatles",        youtubeId: "Gh2D-ciM-XA", startSec: 0   },
-  { title: "Eight Days a Week",                album: "Beatles for Sale",        youtubeId: "SIdkgSsAetA", startSec: 0   },
-  { title: "Revolution",                       album: "Single",                  youtubeId: "BGLGzRXY5Bw", startSec: 0   },
-  { title: "Back in the U.S.S.R.",             album: "The White Album",         youtubeId: "SNdcFPjGsm8", startSec: 0   },
-  { title: "Get Back",                         album: "Let It Be",               youtubeId: "yNLYMxBsAho", startSec: 0   },
-  { title: "Don't Let Me Down",                album: "Single",                  youtubeId: "NCtzkaL2t_Y", startSec: 0   },
-  { title: "Ob-La-Di, Ob-La-Da",              album: "The White Album",         youtubeId: "7D4YlMqMi3U", startSec: 0   },
-  { title: "Lucy in the Sky with Diamonds",    album: "Sgt. Pepper's",           youtubeId: "naoknj1ebqI", startSec: 0   },
-  { title: "With a Little Help from My Friends", album: "Sgt. Pepper's",        youtubeId: "0C58ttB2-Tg", startSec: 0   },
-  { title: "Across the Universe",              album: "Let It Be",               youtubeId: "gyzSn55KGMI", startSec: 0   },
-  { title: "Golden Slumbers",                  album: "Abbey Road",              youtubeId: "Y1YNqIQXWV4", startSec: 0   },
-  { title: "I Want to Hold Your Hand",         album: "With the Beatles",        youtubeId: "jenWdylTtzs", startSec: 0   },
-  { title: "Ticket to Ride",                   album: "Help!",                   youtubeId: "P1s4MgspXA4", startSec: 0   },
-  { title: "And I Love Her",                   album: "A Hard Day's Night",      youtubeId: "a7t-9PTjFu4", startSec: 0   },
-  { title: "A Hard Day's Night",               album: "A Hard Day's Night",      youtubeId: "6CPXSM19j04", startSec: 0   },
-  { title: "Can't Buy Me Love",                album: "A Hard Day's Night",      youtubeId: "SuaHMBNuFzI", startSec: 0   },
-  { title: "I Feel Fine",                      album: "Single",                  youtubeId: "S7x_tnxRGdI", startSec: 0   },
-  { title: "We Can Work It Out",               album: "Single",                  youtubeId: "SyFvHNaKNvI", startSec: 0   },
-  { title: "Day Tripper",                      album: "Single",                  youtubeId: "AHSNFovKBB0", startSec: 0   },
-  { title: "Paperback Writer",                 album: "Single",                  youtubeId: "O3uI0-0DKVE", startSec: 0   },
-  { title: "Yellow Submarine",                 album: "Revolver",                youtubeId: "m2uTFF_3MaA", startSec: 0   },
-  { title: "Lady Madonna",                     album: "Single",                  youtubeId: "M9LcfE8GNdE", startSec: 0   },
-  { title: "The Ballad of John and Yoko",      album: "Single",                  youtubeId: "2mbrFmr9U44", startSec: 0   },
-  { title: "Let It Be (Naked)",                album: "Let It Be... Naked",      youtubeId: "QDYfEBY9NM4", startSec: 0   },
-  { title: "Nowhere Man",                      album: "Rubber Soul",             youtubeId: "0l0kBzgjOqI", startSec: 0   },
-  { title: "Michelle",                         album: "Rubber Soul",             youtubeId: "BNKP8Ua2pjE", startSec: 0   },
-  { title: "In My Life",                       album: "Rubber Soul",             youtubeId: "YBcdt6DsLQA", startSec: 0   },
-  { title: "Two of Us",                        album: "Let It Be",               youtubeId: "6PEIPDFEXb4", startSec: 0   },
-  { title: "The Long and Winding Road",        album: "Let It Be",               youtubeId: "fR4HjTH_fTM", startSec: 0   },
-  { title: "Something",                        album: "Abbey Road",              youtubeId: "UelDrZ1aFeY", startSec: 0   },
-  { title: "Octopus's Garden",                 album: "Abbey Road",              youtubeId: "zFBuMZ7MdXw", startSec: 0   },
-  { title: "Sun King",                         album: "Abbey Road",              youtubeId: "nFLTqJGpJAQ", startSec: 0   },
-  { title: "I've Got a Feeling",               album: "Let It Be",               youtubeId: "tQqJicECCLs", startSec: 0   },
-  { title: "For No One",                       album: "Revolver",                youtubeId: "6KRBbRkWRcg", startSec: 0   },
-  { title: "Here, There and Everywhere",       album: "Revolver",                youtubeId: "DEdYZLEYuGk", startSec: 0   },
-  { title: "Good Day Sunshine",                album: "Revolver",                youtubeId: "TJk-wy7sYac", startSec: 0   },
-  { title: "Got to Get You into My Life",      album: "Revolver",                youtubeId: "9qS9TNNte5Q", startSec: 0   },
-  { title: "Being for the Benefit of Mr. Kite!", album: "Sgt. Pepper's",        youtubeId: "YLx7-OY57h0", startSec: 0   },
-  { title: "When I'm Sixty-Four",              album: "Sgt. Pepper's",           youtubeId: "HCTunqv1Xt4", startSec: 0   },
-  { title: "Lovely Rita",                      album: "Sgt. Pepper's",           youtubeId: "8pOWmOhzMxE", startSec: 0   },
-  { title: "I Am the Walrus",                  album: "Magical Mystery Tour",    youtubeId: "9s0MzNOA_Cs", startSec: 0   },
-  { title: "The Fool on the Hill",             album: "Magical Mystery Tour",    youtubeId: "DGPLP6yvGNQ", startSec: 0   },
-  { title: "Magical Mystery Tour",             album: "Magical Mystery Tour",    youtubeId: "R3QuOmMT5vU", startSec: 0   },
-  { title: "Baby, You Can Drive My Car",       album: "Rubber Soul",             youtubeId: "1FBkYhJP5no", startSec: 0   },
-  { title: "Run for Your Life",                album: "Rubber Soul",             youtubeId: "GxdF5Ly7-S0", startSec: 0   },
-  { title: "Think for Yourself",               album: "Rubber Soul",             youtubeId: "FE6FqtjTn_g", startSec: 0   },
-  { title: "The Word",                         album: "Rubber Soul",             youtubeId: "n4YY11XTPE8", startSec: 0   },
-  { title: "Wait",                             album: "Rubber Soul",             youtubeId: "NyuVCbnBFiY", startSec: 0   },
-  { title: "I'm Looking Through You",          album: "Rubber Soul",             youtubeId: "HCWGfZ5cFRI", startSec: 0   },
-  { title: "If I Needed Someone",              album: "Rubber Soul",             youtubeId: "MZ6S8Vp3UGE", startSec: 0   },
+  { title: "Come Together",                   album: "Abbey Road" },
+  { title: "Hey Jude",                         album: "Single" },
+  { title: "Let It Be",                        album: "Let It Be" },
+  { title: "Yesterday",                        album: "Help!" },
+  { title: "Something",                        album: "Abbey Road" },
+  { title: "Here Comes the Sun",               album: "Abbey Road" },
+  { title: "Blackbird",                        album: "The White Album" },
+  { title: "In My Life",                       album: "Rubber Soul" },
+  { title: "A Day in the Life",                album: "Sgt. Pepper's" },
+  { title: "Norwegian Wood",                   album: "Rubber Soul" },
+  { title: "Eleanor Rigby",                    album: "Revolver" },
+  { title: "Strawberry Fields Forever",        album: "Magical Mystery Tour" },
+  { title: "Penny Lane",                       album: "Magical Mystery Tour" },
+  { title: "While My Guitar Gently Weeps",     album: "The White Album" },
+  { title: "Help!",                            album: "Help!" },
+  { title: "Twist and Shout",                  album: "Please Please Me" },
+  { title: "I Am the Walrus",                  album: "Magical Mystery Tour" },
+  { title: "Love Me Do",                       album: "Please Please Me" },
+  { title: "She Loves You",                    album: "With the Beatles" },
+  { title: "Eight Days a Week",                album: "Beatles for Sale" },
+  { title: "Revolution",                       album: "Single" },
+  { title: "Back in the U.S.S.R.",             album: "The White Album" },
+  { title: "Get Back",                         album: "Let It Be" },
+  { title: "Don't Let Me Down",                album: "Single" },
+  { title: "Ob-La-Di, Ob-La-Da",              album: "The White Album" },
+  { title: "Lucy in the Sky with Diamonds",    album: "Sgt. Pepper's" },
+  { title: "With a Little Help from My Friends", album: "Sgt. Pepper's" },
+  { title: "Across the Universe",              album: "Let It Be" },
+  { title: "Golden Slumbers",                  album: "Abbey Road" },
+  { title: "I Want to Hold Your Hand",         album: "With the Beatles" },
+  { title: "Ticket to Ride",                   album: "Help!" },
+  { title: "And I Love Her",                   album: "A Hard Day's Night" },
+  { title: "A Hard Day's Night",               album: "A Hard Day's Night" },
+  { title: "Can't Buy Me Love",                album: "A Hard Day's Night" },
+  { title: "I Feel Fine",                      album: "Single" },
+  { title: "We Can Work It Out",               album: "Single" },
+  { title: "Day Tripper",                      album: "Single" },
+  { title: "Paperback Writer",                 album: "Single" },
+  { title: "Yellow Submarine",                 album: "Revolver" },
+  { title: "Lady Madonna",                     album: "Single" },
+  { title: "The Ballad of John and Yoko",      album: "Single" },
+  { title: "Let It Be (Naked)",                album: "Let It Be... Naked" },
+  { title: "Nowhere Man",                      album: "Rubber Soul" },
+  { title: "Michelle",                         album: "Rubber Soul" },
+  { title: "In My Life",                       album: "Rubber Soul" },
+  { title: "Two of Us",                        album: "Let It Be" },
+  { title: "The Long and Winding Road",        album: "Let It Be" },
+  { title: "Something",                        album: "Abbey Road" },
+  { title: "Octopus's Garden",                 album: "Abbey Road" },
+  { title: "Sun King",                         album: "Abbey Road" },
+  { title: "I've Got a Feeling",               album: "Let It Be" },
+  { title: "For No One",                       album: "Revolver" },
+  { title: "Here, There and Everywhere",       album: "Revolver" },
+  { title: "Good Day Sunshine",                album: "Revolver" },
+  { title: "Got to Get You into My Life",      album: "Revolver" },
+  { title: "Being for the Benefit of Mr. Kite!", album: "Sgt. Pepper's" },
+  { title: "When I'm Sixty-Four",              album: "Sgt. Pepper's" },
+  { title: "Lovely Rita",                      album: "Sgt. Pepper's" },
+  { title: "I Am the Walrus",                  album: "Magical Mystery Tour" },
+  { title: "The Fool on the Hill",             album: "Magical Mystery Tour" },
+  { title: "Magical Mystery Tour",             album: "Magical Mystery Tour" },
+  { title: "Baby, You Can Drive My Car",       album: "Rubber Soul" },
+  { title: "Run for Your Life",                album: "Rubber Soul" },
+  { title: "Think for Yourself",               album: "Rubber Soul" },
+  { title: "The Word",                         album: "Rubber Soul" },
+  { title: "Wait",                             album: "Rubber Soul" },
+  { title: "I'm Looking Through You",          album: "Rubber Soul" },
+  { title: "If I Needed Someone",              album: "Rubber Soul" },
 ];
 
 // Deduplicate (some songs listed twice by accident above)
@@ -557,6 +675,78 @@ const SONG_LIST = SONGS.filter(s => {
   seen.add(s.title);
   return true;
 });
+
+const BONUS_SONGS = [
+  { title: "Flying",                          album: "Magical Mystery Tour" },
+  { title: "Blue Jay Way",                    album: "Magical Mystery Tour" },
+  { title: "Baby You Can Drive My Car",       album: "Rubber Soul" },
+  { title: "Piggies",                         album: "The White Album" },
+  { title: "Wild Honey Pie",                  album: "The White Album" },
+  { title: "Yer Blues",                       album: "The White Album" },
+  { title: "Sexy Sadie",                      album: "The White Album" },
+  { title: "Long Long Long",                  album: "The White Album" },
+  { title: "Savoy Truffle",                   album: "The White Album" },
+  { title: "Cry Baby Cry",                    album: "The White Album" },
+  { title: "Julia",                           album: "The White Album" },
+  { title: "Martha My Dear",                  album: "The White Album" },
+  { title: "I'm So Tired",                    album: "The White Album" },
+  { title: "Happiness Is a Warm Gun",         album: "The White Album" },
+  { title: "Rocky Raccoon",                   album: "The White Album" },
+  { title: "Don't Pass Me By",                album: "The White Album" },
+  { title: "She Said She Said",               album: "Revolver" },
+  { title: "Love You To",                     album: "Revolver" },
+  { title: "And Your Bird Can Sing",          album: "Revolver" },
+  { title: "Doctor Robert",                   album: "Revolver" },
+  { title: "Tomorrow Never Knows",            album: "Revolver" },
+  { title: "I'm Only Sleeping",              album: "Revolver" },
+  { title: "The Inner Light",                 album: "Single" },
+  { title: "Old Brown Shoe",                  album: "Single" },
+  { title: "You Know My Name",               album: "Single" },
+  { title: "Within You Without You",          album: "Sgt. Pepper's" },
+  { title: "Fixing a Hole",                   album: "Sgt. Pepper's" },
+  { title: "Getting Better",                  album: "Sgt. Pepper's" },
+  { title: "She's Leaving Home",              album: "Sgt. Pepper's" },
+  { title: "Good Morning Good Morning",       album: "Sgt. Pepper's" },
+  { title: "I'm the Walrus",                 album: "Magical Mystery Tour" },
+  { title: "Your Mother Should Know",         album: "Magical Mystery Tour" },
+  { title: "Baby's in Black",                album: "Beatles for Sale" },
+  { title: "I'll Follow the Sun",            album: "Beatles for Sale" },
+  { title: "No Reply",                        album: "Beatles for Sale" },
+  { title: "I Don't Want to Spoil the Party", album: "Beatles for Sale" },
+  { title: "What You're Doing",               album: "Beatles for Sale" },
+  { title: "Mr. Moonlight",                   album: "Beatles for Sale" },
+  { title: "Tell Me What You See",            album: "Help!" },
+  { title: "You've Got to Hide Your Love Away", album: "Help!" },
+  { title: "I've Just Seen a Face",          album: "Help!" },
+  { title: "It's Only Love",                 album: "Help!" },
+  { title: "Think for Yourself",              album: "Rubber Soul" },
+  { title: "The Word",                        album: "Rubber Soul" },
+  { title: "Run for Your Life",               album: "Rubber Soul" },
+  { title: "I'm Looking Through You",        album: "Rubber Soul" },
+  { title: "If I Needed Someone",             album: "Rubber Soul" },
+  { title: "For No One",                      album: "Revolver" },
+  { title: "I Want to Tell You",              album: "Revolver" },
+  { title: "Mean Mr. Mustard",               album: "Abbey Road" },
+  { title: "Polythene Pam",                   album: "Abbey Road" },
+  { title: "She Came In Through the Bathroom Window", album: "Abbey Road" },
+  { title: "Carry That Weight",               album: "Abbey Road" },
+  { title: "The End",                         album: "Abbey Road" },
+  { title: "Her Majesty",                     album: "Abbey Road" },
+  { title: "Two of Us",                       album: "Let It Be" },
+  { title: "Dig a Pony",                      album: "Let It Be" },
+  { title: "I've Got a Feeling",             album: "Let It Be" },
+  { title: "One After 909",                   album: "Let It Be" },
+  { title: "Maggie Mae",                      album: "Let It Be" },
+  { title: "Dig It",                          album: "Let It Be" },
+];
+
+
+function getTodayBonus() {
+  const day = getDayNumber();
+  // Offset by half the list length so bonus never coincides with main song
+  const offset = Math.floor(BONUS_SONGS.length / 2);
+  return BONUS_SONGS[(day + offset) % BONUS_SONGS.length];
+}
 
 // ─────────────────────────────────────────────
 // Daily rotation — deterministic from UTC date
@@ -590,8 +780,7 @@ let state = {
   won: false,
 };
 
-let ytPlayer = null;
-let ytReady = false;
+let audio = null;
 let clipPlaying = false;
 let clipTimer = null;
 let acVisible = false;
@@ -645,30 +834,37 @@ function saveStats(result) {
 }
 
 // ─────────────────────────────────────────────
-// YouTube IFrame API
+// Bonus state & storage
 // ─────────────────────────────────────────────
-window.onYouTubeIframeAPIReady = function() {
-  ytReady = true;
-  if (state.song) initYT();
+const LS_BONUS = 'beatlesdle_bonus_v1';
+
+let bonusState = {
+  day: 0, song: null, guesses: [], finished: false, won: false, unlocked: false,
 };
 
-function initYT() {
-  if (!ytReady || !state.song) return;
-  if (ytPlayer) { ytPlayer.destroy(); ytPlayer = null; }
-  const container = document.createElement('div');
-  container.id = 'yt-player';
-  container.style.cssText = 'position:fixed;bottom:-200px;left:-200px;width:1px;height:1px;';
-  document.body.appendChild(container);
-  ytPlayer = new YT.Player('yt-player', {
-    videoId: state.song.youtubeId,
-    playerVars: {
-      autoplay: 0, controls: 0, disablekb: 1, fs: 0,
-      modestbranding: 1, rel: 0, playsinline: 1,
-    },
-    events: { onReady: () => ytPlayer.seekTo(state.song.startSec || 0, true) }
-  });
+function saveBonusState() { localStorage.setItem(LS_BONUS, JSON.stringify(bonusState)); }
+
+function loadBonusState() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(LS_BONUS));
+    if (saved && saved.day === getDayNumber()) {
+      bonusState = saved;
+      bonusState.song = getTodayBonus();
+      return true;
+    }
+  } catch(e) {}
+  return false;
 }
 
+// ─────────────────────────────────────────────
+// YouTube IFrame API
+// ─────────────────────────────────────────────
+function initAudio() {
+  if (audio) { audio.pause(); audio = null; }
+  audio = new Audio('clips/' + encodeURIComponent(state.song.title) + '.mp3');
+  audio.preload = 'auto';
+  audio.onerror = () => showToast('"' + state.song.title + '.mp3" not found in clips/');
+}
 // ─────────────────────────────────────────────
 // UI helpers
 // ─────────────────────────────────────────────
@@ -809,32 +1005,25 @@ function togglePlay() {
 }
 
 function playClip() {
-  if (!ytPlayer || typeof ytPlayer.playVideo !== 'function') {
-    showToast('audio loading... try again in a moment');
-    return;
-  }
+  if (!audio) { initAudio(); showToast('loading... press play again'); return; }
+  const dur = state.finished ? DURATIONS[DURATIONS.length - 1] : currentDuration();
+  audio.currentTime = 0;
+  audio.play().catch(() => showToast('could not play — check clips/ folder'));
   clipPlaying = true;
   setPlayIcon(true);
-  const dur = state.finished ? DURATIONS[DURATIONS.length - 1] : currentDuration();
-  try {
-    ytPlayer.seekTo(state.song.startSec || 0, true);
-    ytPlayer.playVideo();
-  } catch(e) {}
   if (stopAnim) stopAnim();
-  stopAnim = animateWaveform(dur, () => { stopClip(); });
+  stopAnim = animateWaveform(dur, () => stopClip());
   clearTimeout(clipTimer);
   clipTimer = setTimeout(() => stopClip(), dur * 1000);
 }
-
 function stopClip() {
   clipPlaying = false;
   setPlayIcon(false);
   clearTimeout(clipTimer);
   if (stopAnim) { stopAnim(); stopAnim = null; }
-  try { if (ytPlayer) ytPlayer.pauseVideo(); } catch(e) {}
+  if (audio) { audio.pause(); audio.currentTime = 0; }
   renderWaveform();
 }
-
 // ─────────────────────────────────────────────
 // Autocomplete
 // ─────────────────────────────────────────────
@@ -976,12 +1165,20 @@ function buildShareText() {
 }
 
 function shareResult() {
-  if (!state.finished) { showToast('finish today\'s game first!'); return; }
+  if (!state.finished) { showToast("finish today's game first!"); return; }
   const text = buildShareText();
+  const afterShare = () => {
+    if (state.won && !bonusState.unlocked) {
+      setTimeout(() => unlockBonus(), 400);
+      const btn = document.getElementById('shareBtn');
+      if (btn) btn.textContent = 'share result';
+    }
+  };
   if (navigator.share) {
-    navigator.share({ text }).catch(() => copyShare(text));
+    navigator.share({ text }).then(afterShare).catch(() => { copyShare(text); afterShare(); });
   } else {
     copyShare(text);
+    afterShare();
   }
 }
 
@@ -1041,6 +1238,279 @@ function showToast(msg) {
   toastTimer = setTimeout(() => { t.className = 'toast'; }, 2800);
 }
 
+function initBonusAudio() {
+  if (bonusAudio) { bonusAudio.pause(); bonusAudio = null; }
+  bonusAudio = new Audio('clips/' + encodeURIComponent(bonusState.song.title) + '.mp3');
+  bonusAudio.preload = 'auto';
+  bonusAudio.onerror = () => showToast('"' + bonusState.song.title + '.mp3" not found in clips/');
+}
+function renderBonusWaveform() {
+  const wf = document.getElementById('bonusWaveform');
+  const totalBars = 56;
+  const unlockedRatio = (bonusClipIdx() + 1) / DURATIONS.length;
+  const unlockedBars = Math.round(unlockedRatio * totalBars);
+  wf.innerHTML = '';
+  for (let i = 0; i < totalBars; i++) {
+    const b = document.createElement('div');
+    const seed = (i * 1.9 + (bonusState.song ? bonusState.song.title.length * 0.4 : 5));
+    const h = 6 + Math.abs(Math.sin(seed) * 24) + Math.abs(Math.cos(seed * 0.7) * 12);
+    b.style.height = h + 'px';
+    b.style.flex = '1';
+    b.style.borderRadius = '2px';
+    if (i < unlockedBars) { b.style.background = '#7a6520'; }
+    else { b.style.background = 'transparent'; b.style.border = '0.5px solid rgba(212,175,55,0.2)'; b.style.height = '6px'; }
+    wf.appendChild(b);
+  }
+}
+
+function animateBonusWaveform(durationSec, onDone) {
+  const wf = document.getElementById('bonusWaveform');
+  const bars = Array.from(wf.children);
+  const total = bars.length;
+  const unlockedBars = Math.round(((bonusClipIdx() + 1) / DURATIONS.length) * total);
+  const start = performance.now();
+  let raf;
+  function step(now) {
+    const elapsed = (now - start) / 1000;
+    const progress = Math.min(elapsed / durationSec, 1);
+    const lit = Math.floor(progress * unlockedBars);
+    bars.forEach((b, i) => {
+      if (i < lit) { b.style.background = '#d4af37'; b.style.border = 'none'; }
+      else if (i < unlockedBars) { b.style.background = '#7a6520'; b.style.border = 'none'; }
+      else { b.style.background = 'transparent'; b.style.border = '0.5px solid rgba(212,175,55,0.2)'; b.style.height = '6px'; }
+    });
+    if (progress < 1) raf = requestAnimationFrame(step);
+    else { cancelAnimationFrame(raf); if (onDone) onDone(); }
+  }
+  raf = requestAnimationFrame(step);
+  return () => cancelAnimationFrame(raf);
+}
+
+function renderBonusGuesses() {
+  const list = document.getElementById('bonusGuessList');
+  list.innerHTML = '';
+  for (let i = 0; i < MAX_GUESSES; i++) {
+    const row = document.createElement('div');
+    const g = bonusState.guesses[i];
+    const isActive = !bonusState.finished && i === bonusState.guesses.length;
+    let cls = 'guess-row';
+    if (isActive) cls += ' active';
+    else if (g && g.type === 'correct') cls += ' correct';
+    else if (g && g.type === 'wrong') cls += ' wrong';
+    else if (g && g.type === 'skip') cls += ' skipped';
+    row.className = cls;
+    // Active row gets gold border
+    if (isActive) row.style.borderColor = '#d4af37';
+
+    const icon = document.createElement('div');
+    icon.className = 'g-icon';
+    if (g) {
+      if (g.type === 'correct') icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#5cd05c" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+      else if (g.type === 'wrong') icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#cc2828" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+      else icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#5a554d" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+    }
+    const txt = document.createElement('div');
+    if (!g && !isActive) { txt.className = 'g-text placeholder'; txt.textContent = ''; }
+    else if (!g && isActive) { txt.className = 'g-text placeholder'; txt.textContent = 'your guess...'; }
+    else {
+      if (g.type === 'correct') txt.className = 'g-text correct-txt';
+      else if (g.type === 'wrong') txt.className = 'g-text wrong-txt';
+      else txt.className = 'g-text skip-txt';
+      txt.textContent = g.type === 'skip' ? '— skipped' : g.text;
+    }
+    const num = document.createElement('div');
+    num.className = 'g-num';
+    num.textContent = (i + 1);
+    row.appendChild(icon); row.appendChild(txt); row.appendChild(num);
+    list.appendChild(row);
+  }
+}
+
+function renderBonusProgressDots() {
+  const pd = document.getElementById('bonusProgressDots');
+  pd.innerHTML = '';
+  DURATIONS.forEach((d, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'pdot';
+    dot.style.background = i <= bonusClipIdx() ? '#d4af37' : 'rgba(212,175,55,0.2)';
+    pd.appendChild(dot);
+  });
+}
+
+function updateBonusClipLabel() {
+  const d = bonusDuration();
+  document.getElementById('bonusClipDuration').textContent = d + (d === 1 ? ' second' : ' seconds');
+}
+
+function setBonusPlayIcon(playing) {
+  document.getElementById('bonusPlayIcon').innerHTML = playing
+    ? '<rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/>'
+    : '<path d="M8 5v14l11-7z"/>';
+}
+
+function toggleBonusPlay() {
+  if (bonusClipPlaying) stopBonusClip();
+  else playBonusClip();
+}
+
+function playBonusClip() {
+  if (!bonusAudio) { initBonusAudio(); showToast('loading... press play again'); return; }
+  const dur = bonusState.finished ? DURATIONS[DURATIONS.length - 1] : bonusDuration();
+  bonusAudio.currentTime = 0;
+  bonusAudio.play().catch(() => showToast('could not play — check clips/ folder'));
+  bonusClipPlaying = true;
+  setBonusPlayIcon(true);
+  if (bonusStopAnim) bonusStopAnim();
+  bonusStopAnim = animateBonusWaveform(dur, () => stopBonusClip());
+  clearTimeout(bonusClipTimer);
+  bonusClipTimer = setTimeout(() => stopBonusClip(), dur * 1000);
+}
+function stopBonusClip() {
+  bonusClipPlaying = false;
+  setBonusPlayIcon(false);
+  clearTimeout(bonusClipTimer);
+  if (bonusStopAnim) { bonusStopAnim(); bonusStopAnim = null; }
+  if (bonusAudio) { bonusAudio.pause(); bonusAudio.currentTime = 0; }
+  renderBonusWaveform();
+}
+function onBonusInput(val) {
+  bonusAcIndex = -1;
+  if (!val.trim()) { hideBonusAc(); document.getElementById('bonusSubmitBtn').disabled = true; return; }
+  const q = val.toLowerCase();
+  // Search across ALL songs (main + bonus)
+  const allSongs = [...SONG_LIST, ...BONUS_SONGS].filter((s, i, arr) => arr.findIndex(x => x.title === s.title) === i);
+  bonusAcFiltered = allSongs.filter(s => s.title.toLowerCase().includes(q)).slice(0, 8);
+  if (!bonusAcFiltered.length) { hideBonusAc(); return; }
+  renderBonusAc();
+  document.getElementById('bonusSubmitBtn').disabled = false;
+}
+
+function renderBonusAc() {
+  const ac = document.getElementById('bonusAutocomplete');
+  ac.innerHTML = '';
+  bonusAcFiltered.forEach((s, i) => {
+    const item = document.createElement('div');
+    item.className = 'ac-item' + (i === bonusAcIndex ? ' hi' : '');
+    item.innerHTML = '<div class="ac-title">' + s.title + '</div><div class="ac-album">' + s.album + '</div>';
+    item.addEventListener('mousedown', e => { e.preventDefault(); selectBonusAc(i); });
+    ac.appendChild(item);
+  });
+  ac.style.display = 'block';
+  bonusAcVisible = true;
+}
+
+function hideBonusAc() { document.getElementById('bonusAutocomplete').style.display = 'none'; bonusAcVisible = false; }
+
+function selectBonusAc(i) {
+  document.getElementById('bonusSongInput').value = bonusAcFiltered[i].title;
+  document.getElementById('bonusSubmitBtn').disabled = false;
+  hideBonusAc();
+}
+
+function onBonusKey(e) {
+  if (e.key === 'Enter') {
+    if (bonusAcVisible && bonusAcIndex >= 0) { selectBonusAc(bonusAcIndex); return; }
+    if (!document.getElementById('bonusSubmitBtn').disabled) doBonusSubmit();
+    return;
+  }
+  if (e.key === 'Escape') { hideBonusAc(); return; }
+  if (!bonusAcVisible) return;
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    bonusAcIndex = Math.min(bonusAcIndex + 1, bonusAcFiltered.length - 1);
+    renderBonusAc();
+    if (bonusAcFiltered[bonusAcIndex]) document.getElementById('bonusSongInput').value = bonusAcFiltered[bonusAcIndex].title;
+  }
+  if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    bonusAcIndex = Math.max(bonusAcIndex - 1, 0);
+    renderBonusAc();
+    if (bonusAcFiltered[bonusAcIndex]) document.getElementById('bonusSongInput').value = bonusAcFiltered[bonusAcIndex].title;
+  }
+}
+
+function doBonusSkip() {
+  if (bonusState.finished) return;
+  bonusState.guesses.push({ type: 'skip', text: '' });
+  afterBonusGuess();
+}
+
+function doBonusSubmit() {
+  const val = document.getElementById('bonusSongInput').value.trim();
+  if (!val) return;
+  const isCorrect = val.toLowerCase() === bonusState.song.title.toLowerCase();
+  bonusState.guesses.push({ type: isCorrect ? 'correct' : 'wrong', text: val });
+  document.getElementById('bonusSongInput').value = '';
+  hideBonusAc();
+  document.getElementById('bonusSubmitBtn').disabled = true;
+  afterBonusGuess(isCorrect);
+}
+
+function afterBonusGuess(won) {
+  const tooMany = bonusState.guesses.length >= MAX_GUESSES;
+  if (won || tooMany) { bonusState.finished = true; bonusState.won = !!won; }
+  saveBonusState();
+  renderBonusAll();
+  if (bonusState.finished) setTimeout(showBonusEndCard, 600);
+}
+
+function renderBonusAll() {
+  renderBonusWaveform();
+  renderBonusGuesses();
+  renderBonusProgressDots();
+  updateBonusClipLabel();
+}
+
+function showBonusEndCard() {
+  stopBonusClip();
+  const headlines = { 1:'legendary!', 2:'incredible!', 3:'deep cut expert!', 4:'nice one!', 5:'so close!', 6:'well tried!' };
+  document.getElementById('bonusEndHeadline').textContent = bonusState.won ? headlines[bonusState.guesses.length] : 'a tricky one';
+  document.getElementById('bonusEndSong').innerHTML = (bonusState.won ? 'you got it — ' : 'the answer was ') +
+    '<strong>' + bonusState.song.title + '</strong> · ' + bonusState.song.album;
+  document.getElementById('bonusEndCard').className = 'bonus-end-card show';
+  document.getElementById('bonusInputSection').style.display = 'none';
+}
+
+function shareBonusResult() {
+  const blocks = { correct: '🌟', wrong: '🟥', skip: '⬛' };
+  const rows = bonusState.guesses.map(g => blocks[g.type]).join('');
+  const result = bonusState.won ? bonusState.guesses.length + '/' + MAX_GUESSES : 'X/' + MAX_GUESSES;
+  const text = 'Beatlesdle #' + (state.day + 1) + ' BONUS ' + result + '\n' + rows + '\nbeatlesdle.github.io';
+  if (navigator.share) navigator.share({ text }).catch(() => copyShare(text));
+  else copyShare(text);
+}
+
+function unlockBonus() {
+  bonusState.unlocked = true;
+  saveBonusState();
+  renderBonusUI();
+  initBonusAudio();
+  // Scroll to bonus section
+  setTimeout(() => document.getElementById('bonusSection').scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+}
+
+function renderBonusUI() {
+  if (!state.won) {
+    // Only winners get the bonus
+    document.getElementById('bonusLocked').className = 'bonus-locked';
+    document.getElementById('bonusSection').className = 'bonus-section';
+    return;
+  }
+  if (!bonusState.unlocked) {
+    document.getElementById('bonusLocked').className = 'bonus-locked show';
+    document.getElementById('bonusSection').className = 'bonus-section';
+  } else {
+    document.getElementById('bonusLocked').className = 'bonus-locked';
+    document.getElementById('bonusSection').className = 'bonus-section show';
+    renderBonusAll();
+    if (bonusState.finished) {
+      showBonusEndCard();
+      document.getElementById('bonusInputSection').style.display = 'none';
+    }
+  }
+}
+
+
 // ─────────────────────────────────────────────
 // Init
 // ─────────────────────────────────────────────
@@ -1053,19 +1523,28 @@ function init() {
     state.song = song;
     state.day = day;
   }
+  const hadBonus = loadBonusState();
+  if (!hadBonus) {
+    bonusState = { day, song: getTodayBonus(), guesses: [], finished: false, won: false, unlocked: false };
+  } else {
+    bonusState.song = getTodayBonus();
+    bonusState.day = day;
+  }
   updateDay();
   renderAll();
   if (state.finished) {
     showEndCard();
     document.getElementById('inputSection').style.display = 'none';
+    if (bonusState.unlocked) {
+      const btn = document.getElementById('shareBtn');
+      if (btn) btn.textContent = 'share result';
+    }
   }
-  initYT();
+  renderBonusUI();
+  initAudio();
+  if (bonusState.unlocked) initBonusAudio();
 }
 
-// Load YouTube API
-const ytScript = document.createElement('script');
-ytScript.src = 'https://www.youtube.com/iframe_api';
-document.head.appendChild(ytScript);
 
 init();
 </script>
