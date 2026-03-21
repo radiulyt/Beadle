@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Beatlesdle — Daily Beatles Heardle</title>
+<title>Beadle — Daily Beatles Heardle</title>
 <meta name="description" content="Guess the Beatles song from a short clip. A new song every day, same for everyone worldwide.">
-<meta property="og:title" content="Beatlesdle">
+<meta property="og:title" content="Beadle">
 <meta property="og:description" content="Daily Beatles song guessing game">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -376,7 +376,7 @@
 
 <header>
   <div class="logo-block">
-    <div class="logo-main">Beatles<em>dle</em></div>
+    <div class="logo-main">Bea<em>dle</em></div>
     <span class="logo-sub">daily beatles heardle</span>
   </div>
   <div class="header-right">
@@ -561,7 +561,7 @@ const SONG_LIST = SONGS.filter(s => {
 // ─────────────────────────────────────────────
 // Daily rotation — deterministic from UTC date
 // ─────────────────────────────────────────────
-const EPOCH = new Date('2025-01-01T00:00:00Z');
+const EPOCH = new Date('2026-03-21T00:00:00Z');
 function getDayNumber() {
   const now = new Date();
   const utcNow = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
@@ -601,8 +601,8 @@ let acFiltered = [];
 // ─────────────────────────────────────────────
 // localStorage helpers
 // ─────────────────────────────────────────────
-const LS_STATE = 'beatlesdle_state_v1';
-const LS_STATS = 'beatlesdle_stats_v1';
+const LS_STATE = 'beadle_state_v1';
+const LS_STATS = 'beadle_stats_v1';
 
 function saveState() { localStorage.setItem(LS_STATE, JSON.stringify(state)); }
 
@@ -944,7 +944,7 @@ function showEndCard() {
   document.getElementById('endHeadline').textContent = state.won ? headlines[state.guesses.length] : 'better luck tomorrow';
   document.getElementById('endSong').innerHTML = (state.won ? 'you got it — ' : 'the answer was ') +
     '<strong>' + state.song.title + '</strong> · ' + state.song.album;
-  document.getElementById('endNext').textContent = 'next beatlesdle in ' + timeUntilMidnightUTC();
+  document.getElementById('endNext').textContent = 'next beadle in ' + timeUntilMidnightUTC();
   document.getElementById('endCard').className = 'end-card show';
   document.getElementById('inputSection').style.display = 'none';
 }
@@ -972,7 +972,7 @@ function buildShareText() {
   const blocks = { correct: '🟩', wrong: '🟥', skip: '⬛' };
   const rows = state.guesses.map(g => blocks[g.type]).join('');
   const result = state.won ? state.guesses.length + '/' + MAX_GUESSES : 'X/' + MAX_GUESSES;
-  return 'Beatlesdle #' + (state.day + 1) + ' ' + result + '\n' + rows + '\nbeatlesdle.github.io';
+  return 'Beadle #' + (state.day + 1) + ' ' + result + '\n' + rows + '\nradiulyt.github.io/Beadle/';
 }
 
 function shareResult() {
