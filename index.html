@@ -583,6 +583,10 @@
         <div style="display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--red);flex-shrink:0;">16s</span><span>Final attempt — 16 seconds</span></div>
       </div>
       <p style="color:var(--text3);font-size:12px;">A new song every day at midnight UTC. Same song for everyone worldwide.</p>
+      <p style="color:var(--text3);font-size:12px;">Audio clips are sourced from YouTube. Add your own <code style="font-size:11px;background:var(--bg3);padding:1px 5px;border-radius:3px;">clips/</code> folder for fully offline play.</p>
+      <div style="border-top:0.5px solid var(--border);padding-top:12px;margin-top:4px;">
+        <p style="font-size:11px;color:var(--text3);">questions or feedback? get in touch at <a href="mailto:enquiries@beadle.live" style="color:var(--text2);text-decoration:none;border-bottom:0.5px solid var(--text3);">enquiries@beadle.live</a></p>
+      </div>
     </div>
   </div>
 </div>
@@ -1329,6 +1333,9 @@ function initBonusAudio() {
   bonusAudio.preload = 'auto';
   bonusAudio.onerror = () => showToast('could not load: ' + bonusState.song.title);
 }
+function bonusClipIdx() { return Math.min(bonusState.guesses.length, DURATIONS.length - 1); }
+function bonusDuration() { return DURATIONS[bonusClipIdx()]; }
+
 function renderBonusWaveform() {
   const wf = document.getElementById('bonusWaveform');
   const totalBars = 56;
