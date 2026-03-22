@@ -30,6 +30,13 @@
     --cream: #f0ece4;
   }
 
+  @font-face {
+  font-family: 'Bootle';
+  src: url('fonts/Bootle-4B9l.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
   html { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; }
 
   body {
@@ -55,13 +62,13 @@
     margin-bottom: 1.5rem;
   }
   .logo-block { line-height: 1; }
-  .logo-main {
-    font-family: 'Playfair Display', serif;
-    font-weight: 900;
-    font-size: 1.75rem;
-    letter-spacing: -0.02em;
-    color: var(--cream);
-  }
+.logo-main {
+  font-family: 'Bootle', serif;
+  font-weight: normal;
+  font-size: 2rem;
+  letter-spacing: -0.08em;
+  color: var(--cream);
+}
   .logo-main em { color: var(--red); font-style: normal; }
   .logo-sub {
     font-size: 10px;
@@ -573,7 +580,7 @@
     <button class="modal-close" onclick="closeHelp()">×</button>
     <div class="modal-title">how to play</div>
     <div style="display:flex;flex-direction:column;gap:12px;font-size:13px;color:var(--text2);line-height:1.6;">
-      <p>Listen to the opening clip of a Beatles song and try to name it.</p>
+      <p>Listen to the opening part of a Beatles song and try to name it.</p>
       <div style="display:flex;flex-direction:column;gap:6px;">
         <div style="display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--red);flex-shrink:0;">1s</span><span>First guess — just one second</span></div>
         <div style="display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--red);flex-shrink:0;">2s</span><span>Skip or wrong guess unlocks 2 seconds</span></div>
@@ -583,7 +590,6 @@
         <div style="display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--red);flex-shrink:0;">16s</span><span>Final attempt — 16 seconds</span></div>
       </div>
       <p style="color:var(--text3);font-size:12px;">A new song every day at midnight UTC. Same song for everyone worldwide.</p>
-      <p style="color:var(--text3);font-size:12px;">Audio clips are sourced from YouTube. Add your own <code style="font-size:11px;background:var(--bg3);padding:1px 5px;border-radius:3px;">clips/</code> folder for fully offline play.</p>
       <div style="border-top:0.5px solid var(--border);padding-top:12px;margin-top:4px;">
         <p style="font-size:11px;color:var(--text3);">questions or feedback? get in touch at <a href="mailto:enquiries@beadle.live" style="color:var(--text2);text-decoration:none;border-bottom:0.5px solid var(--text3);">enquiries@beadle.live</a></p>
       </div>
