@@ -7,6 +7,9 @@
 <meta name="description" content="Guess the Beatles song from a short clip. A new song every day, same for everyone worldwide.">
 <meta property="og:title" content="Beadle">
 <meta property="og:description" content="Daily Beatles song guessing game">
+<meta property="og:image" content="https://beadle.live/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -958,7 +961,7 @@ function saveStats(result) {
 // ─────────────────────────────────────────────
 // Bonus state & storage
 // ─────────────────────────────────────────────
-const LS_BONUS = 'beatlesdle_bonus_v1';
+const LS_BONUS = 'beadle_bonus_v1';
 
 let bonusState = {
   day: 0, song: null, guesses: [], finished: false, won: false, unlocked: false,
@@ -1607,7 +1610,7 @@ function shareBonusResult() {
   const blocks = { correct: '🌟', wrong: '🟥', skip: '⬛' };
   const rows = bonusState.guesses.map(g => blocks[g.type]).join('');
   const result = bonusState.won ? bonusState.guesses.length + '/' + MAX_GUESSES : 'X/' + MAX_GUESSES;
-  const text = 'Beatlesdle #' + (state.day + 1) + ' BONUS ' + result + '\n' + rows + '\nbeatlesdle.github.io';
+  const text = 'Beadle #' + (state.day + 1) + ' BONUS ' + result + '\n' + rows + '\nbeadle.live';
   if (navigator.share) navigator.share({ text }).catch(() => copyShare(text));
   else copyShare(text);
 }
