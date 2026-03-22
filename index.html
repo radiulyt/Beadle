@@ -931,8 +931,11 @@ function loadBonusState() {
 // YouTube IFrame API
 // ─────────────────────────────────────────────
 function initAudio() {
+  if (!state.song || !state.song.filename) { console.error('initAudio: missing song/filename'); return; }
   if (audio) { audio.pause(); audio = null; }
-  audio = new Audio(AUDIO_BASE_URL + '/' + encodeURIComponent(state.song.filename) + '.mp3');
+  const url = AUDIO_BASE_URL + '/' + encodeURIComponent(state.song.filename) + '.mp3';
+  console.log('Loading audio:', url);
+  audio = new Audio(url);
   audio.preload = 'auto';
   audio.onerror = () => showToast('could not load: ' + state.song.title);
 }
@@ -1076,7 +1079,7 @@ function togglePlay() {
 }
 
 function playClip() {
-  if (!audio) { initAudio(); showToast('loading... press play again'); return; }
+  if (!audio) initAudio();
   const dur = state.finished ? DURATIONS[DURATIONS.length - 1] : currentDuration();
   audio.currentTime = 0;
   audio.play().catch(() => showToast('could not play — check clips/ folder'));
@@ -1310,8 +1313,12 @@ function showToast(msg) {
 }
 
 function initBonusAudio() {
+  if (!bonusState.song) { console.error('initBonusAudio: bonusState.song is null'); return; }
+  if (!bonusState.song.filename) { console.error('initBonusAudio: missing filename for', bonusState.song.title); return; }
   if (bonusAudio) { bonusAudio.pause(); bonusAudio = null; }
-  bonusAudio = new Audio(AUDIO_BASE_URL + '/' + encodeURIComponent(bonusState.song.filename) + '.mp3');
+  const url = AUDIO_BASE_URL + '/' + encodeURIComponent(bonusState.song.filename) + '.mp3';
+  console.log('Loading bonus audio:', url);
+  bonusAudio = new Audio(url);
   bonusAudio.preload = 'auto';
   bonusAudio.onerror = () => showToast('could not load: ' + bonusState.song.title);
 }
@@ -1425,10 +1432,10 @@ function toggleBonusPlay() {
 }
 
 function playBonusClip() {
-  if (!bonusAudio) { initBonusAudio(); showToast('loading... press play again'); return; }
+  if (!bonusAudio) initBonusAudio();
   const dur = bonusState.finished ? DURATIONS[DURATIONS.length - 1] : bonusDuration();
   bonusAudio.currentTime = 0;
-  bonusAudio.play().catch(() => showToast('could not play — check clips/ folder'));
+  bonusAudio.play().catch(e => { console.error('bonus play error:', e); showToast('could not play bonus audio'); });
   bonusClipPlaying = true;
   setBonusPlayIcon(true);
   if (bonusStopAnim) bonusStopAnim();
