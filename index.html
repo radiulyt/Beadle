@@ -1289,7 +1289,7 @@ function buildShareText() {
   const blocks = { correct: '🟩', wrong: '🟥', skip: '⬛' };
   const rows = state.guesses.map(g => blocks[g.type]).join('');
   const result = state.won ? state.guesses.length + '/' + MAX_GUESSES : 'X/' + MAX_GUESSES;
-  return 'Beadle #' + (state.day + 1) + ' ' + result + '\n' + rows + '\nbeadle.live';
+  return 'Beadle #' + (state.day + 1) + ' ' + result + '\n' + rows + '\nhttps://beadle.live';
 }
 
 function shareResult() {
@@ -1610,7 +1610,7 @@ function shareBonusResult() {
   const blocks = { correct: '🌟', wrong: '🟥', skip: '⬛' };
   const rows = bonusState.guesses.map(g => blocks[g.type]).join('');
   const result = bonusState.won ? bonusState.guesses.length + '/' + MAX_GUESSES : 'X/' + MAX_GUESSES;
-  const text = 'Beadle #' + (state.day + 1) + ' BONUS ' + result + '\n' + rows + '\nbeadle.live';
+  const text = 'Beadle #' + (state.day + 1) + ' BONUS ' + result + '\n' + rows + '\nhttps://beadle.live';
   if (navigator.share) navigator.share({ text }).catch(() => copyShare(text));
   else copyShare(text);
 }
