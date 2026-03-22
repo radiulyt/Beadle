@@ -1246,7 +1246,7 @@ function buildShareText() {
   const blocks = { correct: '🟩', wrong: '🟥', skip: '⬛' };
   const rows = state.guesses.map(g => blocks[g.type]).join('');
   const result = state.won ? state.guesses.length + '/' + MAX_GUESSES : 'X/' + MAX_GUESSES;
-  return 'Beadle #' + (state.day + 1) + ' ' + result + '\n' + rows + '\nradiulyt.github.io/Beadle/';
+  return 'Beadle #' + (state.day + 1) + ' ' + result + '\n' + rows + '\nbeadle.live';
 }
 
 function shareResult() {
