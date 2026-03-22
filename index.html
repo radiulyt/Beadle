@@ -583,7 +583,6 @@
         <div style="display:flex;gap:8px;align-items:flex-start;"><span style="color:var(--red);flex-shrink:0;">16s</span><span>Final attempt — 16 seconds</span></div>
       </div>
       <p style="color:var(--text3);font-size:12px;">A new song every day at midnight UTC. Same song for everyone worldwide.</p>
-      <p style="color:var(--text3);font-size:12px;">Audio clips are sourced from YouTube. Add your own <code style="font-size:11px;background:var(--bg3);padding:1px 5px;border-radius:3px;">clips/</code> folder for fully offline play.</p>
     </div>
   </div>
 </div>
@@ -857,6 +856,14 @@ let clipTimer = null;
 let acVisible = false;
 let acIndex = -1;
 let acFiltered = [];
+
+let bonusAudio = null;
+let bonusClipPlaying = false;
+let bonusClipTimer = null;
+let bonusStopAnim = null;
+let bonusAcFiltered = [];
+let bonusAcIndex = -1;
+let bonusAcVisible = false;
 
 // ─────────────────────────────────────────────
 // localStorage helpers
