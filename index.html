@@ -435,6 +435,32 @@
   .bonus-end-card.show { display: flex; }
 
 
+/* ── Archive modal ── */
+  .archive-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+  .archive-list::-webkit-scrollbar { width: 4px; }
+  .archive-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .archive-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--bg3);
+    border: 0.5px solid var(--border);
+  }
+  .archive-row.today { border-color: var(--red); }
+  .archive-num { font-size: 11px; color: var(--text3); min-width: 28px; flex-shrink: 0; }
+  .archive-song { flex: 1; font-size: 13px; color: var(--text); }
+  .archive-album { font-size: 11px; color: var(--text3); }
+  .archive-date { font-size: 11px; color: var(--text3); flex-shrink: 0; }
+  .archive-result { font-size: 12px; flex-shrink: 0; }
 
   /* ── Scrollbar ── */
   .autocomplete::-webkit-scrollbar { width: 4px; }
@@ -465,7 +491,7 @@
 </header>
 
 <main>
-  <div class="day-badge" id="dayBadge">#1 · loading...</div>
+  <div class="day-badge" id="dayBadge" onclick="showArchive()" style="cursor:pointer;" title="View archive">>#1 · loading...</div>
 
   <!-- Player -->
   <div class="player-card">
@@ -597,7 +623,14 @@
     </div>
   </div>
 </div>
-
+<!-- Archive Modal -->
+<div class="modal-overlay" id="archiveModal" onclick="closeModal(event)">
+  <div class="modal" style="max-width:440px;">
+    <button class="modal-close" onclick="closeArchive()">×</button>
+    <div class="modal-title">archive</div>
+    <div class="archive-list" id="archiveList"></div>
+  </div>
+</div>
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
@@ -1316,7 +1349,7 @@ function showStats() {
 function closeStats() { document.getElementById('statsModal').className = 'modal-overlay'; }
 function showHelp()  { document.getElementById('helpModal').className = 'modal-overlay show'; }
 function closeHelp() { document.getElementById('helpModal').className = 'modal-overlay'; }
-function closeModal(e) { if (e.target.classList.contains('modal-overlay')) { closeStats(); closeHelp(); } }
+function closeModal(e) { if (e.target.classList.contains('modal-overlay')) { closeStats(); closeHelp(); closeArchive(); } }
 
 // ─────────────────────────────────────────────
 // Toast
@@ -1613,6 +1646,41 @@ function renderBonusUI() {
 // ─────────────────────────────────────────────
 // Init
 // ─────────────────────────────────────────────
+// ── Archive ──
+function showArchive() {
+  const today = getDayNumber();
+  const list = document.getElementById('archiveList');
+  list.innerHTML = '';
+  for (let d = today; d >= 0; d--) {
+    const song = SONG_LIST[d % SONG_LIST.length];
+    const date = new Date(EPOCH);
+    date.setUTCDate(date.getUTCDate() + d);
+    const dateStr = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+    const isToday = d === today;
+    const revealed = !isToday || state.finished;
+
+    let result = '';
+    if (isToday && state.finished) result = state.won ? '🟩' : '🟥';
+    else if (isToday) result = '▶';
+
+    const row = document.createElement('div');
+    row.className = 'archive-row' + (isToday ? ' today' : '');
+    row.innerHTML = '<div class="archive-num">#' + (d + 1) + '</div>'
+      + '<div style="flex:1;min-width:0;">'
+      + (revealed
+          ? '<div class="archive-song">' + song.title + '</div>'
+            + '<div class="archive-album">' + song.album + '</div>'
+          : '<div class="archive-song" style="color:var(--text3);">play today to reveal</div>')
+      + '</div>'
+      + '<div class="archive-date">' + dateStr + '</div>'
+      + (result ? '<div class="archive-result">' + result + '</div>' : '');
+    list.appendChild(row);
+  }
+  document.getElementById('archiveModal').className = 'modal-overlay show';
+}
+
+function closeArchive() { document.getElementById('archiveModal').className = 'modal-overlay'; }
 function init() {
   const { song, day } = getTodaySong();
   const hadSaved = loadState();
