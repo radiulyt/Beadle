@@ -2,7 +2,7 @@
 
 A daily Beatles Heardle
 
-Built as a tribute to [beadle.gg](https://beadle.gg) which shut down in 2024.
+Built as a tribute to [beadle.gg](https://beadle.gg) which shut down in March 2026.
 
 ## License
 
