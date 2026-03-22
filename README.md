@@ -1,4 +1,4 @@
-# 🎵 Beatlesdle
+# 🎵 Beadle
 
 A daily Beatles Heardle
 
