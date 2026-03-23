@@ -639,16 +639,13 @@
 
 <script>
 // ─────────────────────────────────────────────
-// CONFIG — set your Cloudflare R2 public URL here
+// Cloudflare R2 public URL here
 // ─────────────────────────────────────────────
 const AUDIO_BASE_URL = 'https://pub-2437bbe834954383b299863a6512ce89.r2.dev';
-// Example: 'https://pub-abc123def456.r2.dev'
-// Files must be named exactly: Come Together.mp3, Hey Jude.mp3 etc.
 
 // ─────────────────────────────────────────────
 // SONG LIST — add/remove songs freely.
 // Each entry: { title, album }
-// startSec = where in the YouTube video to begin the clip
 // ─────────────────────────────────────────────
 const SONGS = [
   { title: "A Day In the Life", album: "Sgt. Pepper's", filename: "07. A Day In the Life" },
@@ -1118,13 +1115,13 @@ function setPlayIcon(playing) {
     : '<path d="M8 5v14l11-7z"/>';
 }
 
+
 // ─────────────────────────────────────────────
 // Play / Stop
 // ─────────────────────────────────────────────
 let stopAnim = null;
 
 function togglePlay() {
-  if (state.finished && !state.won) return;
   if (clipPlaying) {
     stopClip();
   } else {
@@ -1134,7 +1131,7 @@ function togglePlay() {
 
 function playClip() {
   if (!audio) initAudio();
-  const dur = state.finished ? DURATIONS[DURATIONS.length - 1] : currentDuration();
+  const dur = state.finished ? 600 : currentDuration();
   audio.currentTime = 0;
   audio.play().catch(() => showToast('could not play — check clips/ folder'));
   clipPlaying = true;
