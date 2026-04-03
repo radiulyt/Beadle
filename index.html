@@ -1005,8 +1005,7 @@ function loadBonusState() {
 function initAudio() {
   if (!state.song || !state.song.filename) { console.error('initAudio: missing song/filename'); return; }
   if (audio) { audio.pause(); audio = null; }
-  const url = AUDIO_BASE_URL + '/' + encodeURIComponent(state.song.filename) + '.mp3';
-  console.log('Loading audio:', url);
+  const url = AUDIO_BASE_URL + '/' + encodeURIComponent(state.song.filename.replace(/'/g, '\u2019')) + '.mp3';  console.log('Loading audio:', url);
   audio = new Audio(url);
   audio.preload = 'auto';
   audio.onerror = () => showToast('could not load: ' + state.song.title);
@@ -1388,7 +1387,7 @@ function initBonusAudio() {
   if (!bonusState.song) { console.error('initBonusAudio: bonusState.song is null'); return; }
   if (!bonusState.song.filename) { console.error('initBonusAudio: missing filename for', bonusState.song.title); return; }
   if (bonusAudio) { bonusAudio.pause(); bonusAudio = null; }
-  const url = AUDIO_BASE_URL + '/' + encodeURIComponent(bonusState.song.filename) + '.mp3';
+  const url = AUDIO_BASE_URL + '/' + encodeURIComponent(bonusState.song.filename.replace(/'/g, '\u2019')) + '.mp3';
   console.log('Loading bonus audio:', url);
   bonusAudio = new Audio(url);
   bonusAudio.preload = 'auto';
